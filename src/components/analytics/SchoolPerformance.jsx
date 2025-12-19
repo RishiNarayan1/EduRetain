@@ -1,19 +1,21 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { mockSchools } from '../../data/mockData';
+import { generateSchools } from '../../data/mockData';
 import { useLanguage } from '../../context/LanguageContext';
 
-const SchoolPerformance = () => {
+const SchoolPerformance = ({ year = '2023-24' }) => {
     const { t } = useLanguage();
+    
+    const data = useMemo(() => generateSchools(20, year), [year]);
 
     return (
         <div className="space-y-6">
             <div className="glass-card p-6">
-                <h3 className="text-xl font-bold text-white mb-4">{t('analytics.schoolWiseDropout')}</h3>
+                <h3 className="text-xl font-bold text-white mb-4">{t('analytics.schoolWiseDropout')} ({year})</h3>
                 <div className="h-96">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart
-                            data={mockSchools}
+                            data={data}
                             margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                         >
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />

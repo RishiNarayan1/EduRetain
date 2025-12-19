@@ -27,6 +27,15 @@ const te = {
     criticalAlertZones: 'తీవ్రమైన అలర్ట్ జోన్లు',
     recentRiskAlerts: 'ఇటీవలి ప్రమాద హెచ్చరికలు',
     dropoutRate: 'డ్రాపౌట్ రేటు',
+    filters: 'ఫిల్టర్లు',
+    tabs: {
+      overview: 'అవలోకనం',
+      stateComparison: 'రాష్ట్ర పోలిక',
+      trends: 'పోకడలు',
+      genderAnalysis: 'లింగ విశ్లేషణ',
+    },
+    topHighDropoutStates: 'అత్యధిక డ్రాపౌట్ ఉన్న టాప్ 10 రాష్ట్రాలు',
+    topBestPerformingStates: 'ఉత్తమ పనితీరు కనబరుస్తున్న టాప్ 10 రాష్ట్రాలు',
   },
 
   // Analytics
@@ -94,10 +103,58 @@ const te = {
     },
   },
 
+  // Settings
+  settings: {
+    title: 'సెట్టింగ్‌లు',
+    subtitle: 'మీ ప్రాధాన్యతలు మరియు ఖాతా సెట్టింగ్‌లను నిర్వహించండి',
+    language: 'భాష',
+    languageDescription: 'ఇంటర్‌ఫేస్ కోసం మీ ఇష్టమైన భాషను ఎంచుకోండి',
+    appearance: 'రూపం',
+    themeDescription: 'అప్లికేషన్ రూపాన్ని అనుకూలీకరించండి',
+    darkMode: 'డార్క్ మోడ్',
+    lightMode: 'లైట్ మోడ్',
+    notifications: 'నోటిఫికేషన్లు',
+    notificationsDescription: 'అలర్ట్‌లు మరియు అప్‌డేట్‌లను ఎలా స్వీకరించాలో కాన్ఫిగర్ చేయండి',
+    emailAlerts: 'ఇమెయిల్ అలర్ట్‌లు',
+    pushNotifications: 'పుష్ నోటిఫికేషన్లు',
+    weeklyReports: 'వారపు నివేదికలు',
+    criticalAlerts: 'క్లిష్టమైన అలర్ట్‌లు',
+    alertThresholds: 'అలర్ట్ పరిమితులు',
+    alertThresholdsDescription: 'డ్రాపౌట్ ప్రమాద అలర్ట్‌లను ఎప్పుడు స్వీకరించాలో కాన్ఫిగర్ చేయండి',
+    dropoutRateThreshold: 'డ్రాపౌట్ రేటు అలర్ట్ పరిమితి',
+    alertNote: 'ఏదైనా ప్రాంతం డ్రాపౌట్ రేటు పరిమితిని మించినప్పుడు మీకు అలర్ట్‌లు వస్తాయి',
+    dataExport: 'డేటా ఎగుమతి',
+    dataExportDescription: 'వివిధ ఫార్మాట్‌లలో మీ విశ్లేషణ డేటాను డౌన్‌లోడ్ చేయండి',
+    account: 'ఖాతా',
+    profile: 'ప్రొఫైల్ సెట్టింగ్‌లు',
+    security: 'భద్రత',
+  },
+
+  // Authentication
+  auth: {
+    welcomeBack: 'స్వాగతం',
+    loginSubtitle: 'మీ డ్యాష్‌బోర్డ్‌ని యాక్సెస్ చేయడానికి సైన్ ఇన్ చేయండి',
+    createAccount: 'ఖాతాను సృష్టించండి',
+    registerSubtitle: 'ట్రాకింగ్ ప్రారంభించడానికి ఎడ్యురిటైన్‌లో చేరండి',
+    email: 'ఇమెయిల్ చిరునామా',
+    password: 'పాస్‌వర్డ్',
+    confirmPassword: 'పాస్‌వర్డ్‌ను నిర్ధారించండి',
+    fullName: 'పూర్తి పేరు',
+    forgotPassword: 'పాస్‌వర్డ్ మర్చిపోయారా?',
+    loginButton: 'సైన్ ఇన్ చేయండి',
+    registerButton: 'ఖాతాను సృష్టించండి',
+    noAccount: 'ఖాతా లేదా?',
+    hasAccount: 'ఇప్పటికే ఖాతా ఉందా?',
+    registerLink: 'ఖాతాను సృష్టించండి',
+    loginLink: 'సైన్ ఇన్ చేయండి',
+  },
+
   // Common
   common: {
     appName: 'ఎడ్యురిటైన్',
+    user: 'వినియోగదారు',
   },
 };
 
 export default te;
+

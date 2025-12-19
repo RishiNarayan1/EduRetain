@@ -1,16 +1,16 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from 'recharts';
-import { mockDemographics } from '../../data/mockData';
+import { generateDemographics } from '../../data/mockData';
 import { useLanguage } from '../../context/LanguageContext';
 
-const SocialTrends = () => {
+const SocialTrends = ({ year = '2023-24' }) => {
     const { t } = useLanguage();
-    const { caste } = mockDemographics;
+    const { caste } = useMemo(() => generateDemographics(year), [year]);
 
     return (
         <div className="space-y-6">
             <div className="glass-card p-6">
-                <h3 className="text-xl font-bold text-white mb-4">{t('analytics.socialVulnerability')}</h3>
+                <h3 className="text-xl font-bold text-white mb-4">{t('analytics.socialVulnerability')} ({year})</h3>
                 <div className="h-96">
                     <ResponsiveContainer width="100%" height="100%">
                         <RadarChart cx="50%" cy="50%" outerRadius="80%" data={caste}>

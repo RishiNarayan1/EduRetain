@@ -7,6 +7,7 @@ const en = {
     simulator: 'Simulator',
     settings: 'Settings',
     logout: 'Logout',
+    logoutConfirm: 'Are you sure to log out?',
   },
 
   // Language selector
@@ -27,6 +28,15 @@ const en = {
     criticalAlertZones: 'Critical Alert Zones',
     recentRiskAlerts: 'Recent Risk Alerts',
     dropoutRate: 'Dropout Rate',
+    filters: 'Filters',
+    tabs: {
+      overview: 'Overview',
+      stateComparison: 'State Comparison',
+      trends: 'Trends',
+      genderAnalysis: 'Gender Analysis',
+    },
+    topHighDropoutStates: 'Top 10 High Dropout States',
+    topBestPerformingStates: 'Top 10 Best Performing States',
   },
 
   // Analytics
@@ -94,10 +104,58 @@ const en = {
     },
   },
 
+  // Settings
+  settings: {
+    title: 'Settings',
+    subtitle: 'Manage your preferences and account settings',
+    language: 'Language',
+    languageDescription: 'Select your preferred language for the interface',
+    appearance: 'Appearance',
+    themeDescription: 'Customize the look and feel of the application',
+    darkMode: 'Dark Mode',
+    lightMode: 'Light Mode',
+    notifications: 'Notifications',
+    notificationsDescription: 'Configure how you receive alerts and updates',
+    emailAlerts: 'Email Alerts',
+    pushNotifications: 'Push Notifications',
+    weeklyReports: 'Weekly Reports',
+    criticalAlerts: 'Critical Alerts',
+    alertThresholds: 'Alert Thresholds',
+    alertThresholdsDescription: 'Configure when to receive dropout risk alerts',
+    dropoutRateThreshold: 'Dropout Rate Alert Threshold',
+    alertNote: "You'll receive alerts when any region's dropout rate exceeds the threshold",
+    dataExport: 'Data Export',
+    dataExportDescription: 'Download your analytics data in various formats',
+    account: 'Account',
+    profile: 'Profile Settings',
+    security: 'Security',
+  },
+
+  // Authentication
+  auth: {
+    welcomeBack: 'Welcome Back',
+    loginSubtitle: 'Sign in to access your dashboard',
+    createAccount: 'Create Account',
+    registerSubtitle: 'Join EduRetain to start tracking',
+    email: 'Email Address',
+    password: 'Password',
+    confirmPassword: 'Confirm Password',
+    fullName: 'Full Name',
+    forgotPassword: 'Forgot password?',
+    loginButton: 'Sign In',
+    registerButton: 'Create Account',
+    noAccount: "Don't have an account?",
+    hasAccount: 'Already have an account?',
+    registerLink: 'Create account',
+    loginLink: 'Sign In',
+  },
+
   // Common
   common: {
     appName: 'EduRetain',
+    user: 'User',
   },
 };
 
 export default en;
+

@@ -1,6 +1,7 @@
 import React from 'react';
 import Sidebar from './Sidebar';
 import AIPolicyAssistant from './AIPolicyAssistant';
+import UserProfile from './UserProfile';
 import { Outlet } from 'react-router-dom';
 
 const MainLayout = () => {
@@ -16,7 +17,11 @@ const MainLayout = () => {
             <Sidebar />
             <AIPolicyAssistant />
 
-            <main className="ml-64 p-8 relative z-10 min-h-screen">
+            {/* Main content - responsive margin */}
+            <main className="lg:ml-64 p-4 sm:p-6 lg:p-8 relative z-10 min-h-screen overflow-y-auto scrollbar-hide">
+                <div className="flex justify-end mb-6">
+                    <UserProfile />
+                </div>
                 <Outlet />
             </main>
         </div>

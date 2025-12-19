@@ -27,6 +27,15 @@ const hi = {
     criticalAlertZones: 'गंभीर अलर्ट क्षेत्र',
     recentRiskAlerts: 'हाल के जोखिम अलर्ट',
     dropoutRate: 'ड्रॉपआउट दर',
+    filters: 'फिल्टर',
+    tabs: {
+      overview: 'अवलोकन',
+      stateComparison: 'राज्य तुलना',
+      trends: 'रुझान',
+      genderAnalysis: 'लिंग विश्लेषण',
+    },
+    topHighDropoutStates: 'शीर्ष 10 उच्च ड्रॉपआउट राज्य',
+    topBestPerformingStates: 'शीर्ष 10 सर्वश्रेष्ठ प्रदर्शन करने वाले राज्य',
   },
 
   // Analytics
@@ -94,10 +103,58 @@ const hi = {
     },
   },
 
+  // Settings
+  settings: {
+    title: 'सेटिंग्स',
+    subtitle: 'अपनी प्राथमिकताएं और खाता सेटिंग्स प्रबंधित करें',
+    language: 'भाषा',
+    languageDescription: 'इंटरफ़ेस के लिए अपनी पसंदीदा भाषा चुनें',
+    appearance: 'दिखावट',
+    themeDescription: 'एप्लिकेशन के रूप और अनुभव को अनुकूलित करें',
+    darkMode: 'डार्क मोड',
+    lightMode: 'लाइट मोड',
+    notifications: 'सूचनाएं',
+    notificationsDescription: 'अलर्ट और अपडेट प्राप्त करने का तरीका कॉन्फ़िगर करें',
+    emailAlerts: 'ईमेल अलर्ट',
+    pushNotifications: 'पुश नोटिफिकेशन',
+    weeklyReports: 'साप्ताहिक रिपोर्ट',
+    criticalAlerts: 'गंभीर अलर्ट',
+    alertThresholds: 'अलर्ट सीमाएं',
+    alertThresholdsDescription: 'ड्रॉपआउट जोखिम अलर्ट कब प्राप्त करें कॉन्फ़िगर करें',
+    dropoutRateThreshold: 'ड्रॉपआउट दर अलर्ट सीमा',
+    alertNote: 'जब किसी क्षेत्र की ड्रॉपआउट दर सीमा से अधिक हो जाएगी तो आपको अलर्ट प्राप्त होंगे',
+    dataExport: 'डेटा निर्यात',
+    dataExportDescription: 'विभिन्न प्रारूपों में अपना विश्लेषण डेटा डाउनलोड करें',
+    account: 'खाता',
+    profile: 'प्रोफ़ाइल सेटिंग्स',
+    security: 'सुरक्षा',
+  },
+
+  // Authentication
+  auth: {
+    welcomeBack: 'वापसी पर स्वागत है',
+    loginSubtitle: 'अपने डैशबोर्ड तक पहुंचने के लिए साइन इन करें',
+    createAccount: 'खाता बनाएं',
+    registerSubtitle: 'ट्रैकिंग शुरू करने के लिए एडुरिटेन से जुड़ें',
+    email: 'ईमेल पता',
+    password: 'पासवर्ड',
+    confirmPassword: 'पासवर्ड की पुष्टि करें',
+    fullName: 'पूरा नाम',
+    forgotPassword: 'पासवर्ड भूल गए?',
+    loginButton: 'साइन इन करें',
+    registerButton: 'खाता बनाएं',
+    noAccount: 'क्या कोई खाता नहीं है?',
+    hasAccount: 'क्या पहले से ही खाता है?',
+    registerLink: 'खाता बनाएं',
+    loginLink: 'साइन इन करें',
+  },
+
   // Common
   common: {
     appName: 'एडुरिटेन',
+    user: 'उपयोगकर्ता',
   },
 };
 
 export default hi;
+
