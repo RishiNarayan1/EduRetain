@@ -3,7 +3,9 @@
     "id": 1765825889405,
     "email": "rn9092167@gmail.com",
     "password": "Rishi@1721",
-    "fullName": "Rishi Narayan"
+    "fullName": "Rishi Narayan",
+    "resetCode": "570080",
+    "resetCodeExpiry": 1766140856378
   },
   {
     "id": 1765826818367,

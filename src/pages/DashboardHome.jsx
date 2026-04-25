@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
   LineChart, Line, Legend, RadarChart, PolarGrid, PolarAngleAxis,
@@ -8,7 +8,7 @@ import {
   TrendingDown, TrendingUp, Users, MapPin, Filter,
   BarChart2, Activity, AlertTriangle, ArrowUpDown, Sparkles
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import {
   getStates, getYears, educationLevels,
   getTopStates, getBottomStates, getGenderComparison,
@@ -48,8 +48,8 @@ const shiftYearLabel = (yearStr) => {
 };
 
 // Stat Card Component
-const StatCard = ({ title, value, subtitle, icon: Icon, color, trend }) => (
-  <motion.div
+const StatCard = ({ title, value, subtitle, icon, color, trend }) => (
+  <Motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     className="glass-card p-5 relative overflow-hidden group cursor-pointer"
@@ -64,7 +64,7 @@ const StatCard = ({ title, value, subtitle, icon: Icon, color, trend }) => (
         {subtitle && <p className="text-xs text-text-secondary mt-1">{subtitle}</p>}
       </div>
       <div className={`p-3 rounded-xl bg-gradient-to-br ${color?.includes('danger') ? 'from-danger/20 to-danger/5' : color?.includes('success') ? 'from-success/20 to-success/5' : 'from-primary/20 to-primary/5'}`}>
-        <Icon className={`w-5 h-5 ${color || 'text-primary'}`} />
+        {icon ? React.createElement(icon, { className: `w-5 h-5 ${color || 'text-primary'}` }) : null}
       </div>
     </div>
     {trend && (
@@ -73,7 +73,7 @@ const StatCard = ({ title, value, subtitle, icon: Icon, color, trend }) => (
         <span>{Math.abs(trend).toFixed(2)}% vs previous year</span>
       </div>
     )}
-  </motion.div>
+  </Motion.div>
 );
 
 // Custom Tooltip
@@ -94,7 +94,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 // Tab Button
-const TabButton = ({ active, onClick, icon: Icon, label }) => (
+const TabButton = ({ active, onClick, icon, label }) => (
   <button
     onClick={onClick}
     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-300 ${active
@@ -102,7 +102,7 @@ const TabButton = ({ active, onClick, icon: Icon, label }) => (
         : 'text-text-secondary hover:bg-white/5 hover:text-white'
       }`}
   >
-    <Icon className="w-4 h-4" />
+    {icon ? React.createElement(icon, { className: 'w-4 h-4' }) : null}
     <span className="hidden sm:inline">{label}</span>
   </button>
 );
@@ -124,17 +124,13 @@ const DashboardHome = () => {
   const years = allYears;
   const states = isNewDataset ? getNewStates() : getStates();
   const currentLevels = isNewDataset ? newEducationLevels : educationLevels;
-
-  // Guard against selecting HrSecondary in the newer dataset (not available there)
-  useEffect(() => {
-    if (isNewDataset && selectedLevel === 'HrSecondary') {
-      setSelectedLevel('Secondary');
-    }
-  }, [isNewDataset, selectedLevel]);
+  const normalizedSelectedLevel = isNewDataset && selectedLevel === 'HrSecondary'
+    ? 'Secondary'
+    : selectedLevel;
+  const selectedLevelLabel = currentLevels.find((level) => level.key === normalizedSelectedLevel)?.label || normalizedSelectedLevel;
 
   // Get data based on dataset mode
   const getYearData = (year) => isNewDataset ? getNewDataByYear(year) : getDataByYear(year);
-  const getNatAvg = (year) => isNewDataset ? getNewNationalAverage(year) : getNationalAverage(year);
 
   const yearStats = useMemo(() => {
     if (isNewDataset) {
@@ -152,40 +148,40 @@ const DashboardHome = () => {
   const topStates = useMemo(() => {
     if (isNewDataset) {
       return getNewDataByYear(selectedYear)
-        .filter(d => d[selectedLevel] !== null && d[selectedLevel] !== undefined)
-        .sort((a, b) => (b[selectedLevel] || 0) - (a[selectedLevel] || 0))
+        .filter(d => d[normalizedSelectedLevel] !== null && d[normalizedSelectedLevel] !== undefined)
+        .sort((a, b) => (b[normalizedSelectedLevel] || 0) - (a[normalizedSelectedLevel] || 0))
         .slice(0, 10)
-        .map(d => ({ state: d.state, value: d[selectedLevel], year: d.year }));
+        .map(d => ({ state: d.state, value: d[normalizedSelectedLevel], year: d.year }));
     }
-    return getTopStates(selectedYear, selectedLevel, 10);
-  }, [selectedYear, selectedLevel, isNewDataset]);
+    return getTopStates(selectedYear, normalizedSelectedLevel, 10);
+  }, [selectedYear, normalizedSelectedLevel, isNewDataset]);
 
   const bottomStates = useMemo(() => {
     if (isNewDataset) {
       return getNewDataByYear(selectedYear)
-        .filter(d => d[selectedLevel] !== null && d[selectedLevel] !== undefined && d[selectedLevel] > 0)
-        .sort((a, b) => (a[selectedLevel] || 0) - (b[selectedLevel] || 0))
+        .filter(d => d[normalizedSelectedLevel] !== null && d[normalizedSelectedLevel] !== undefined && d[normalizedSelectedLevel] > 0)
+        .sort((a, b) => (a[normalizedSelectedLevel] || 0) - (b[normalizedSelectedLevel] || 0))
         .slice(0, 10)
-        .map(d => ({ state: d.state, value: d[selectedLevel], year: d.year }));
+        .map(d => ({ state: d.state, value: d[normalizedSelectedLevel], year: d.year }));
     }
-    return getBottomStates(selectedYear, selectedLevel, 10);
-  }, [selectedYear, selectedLevel, isNewDataset]);
+    return getBottomStates(selectedYear, normalizedSelectedLevel, 10);
+  }, [selectedYear, normalizedSelectedLevel, isNewDataset]);
 
   const genderData = useMemo(() => {
     if (isNewDataset) {
       return getNewDataByYear(selectedYear)
-        .filter(d => d[`${selectedLevel}_Boys`] !== undefined && d[`${selectedLevel}_Girls`] !== undefined)
+        .filter(d => d[`${normalizedSelectedLevel}_Boys`] !== undefined && d[`${normalizedSelectedLevel}_Girls`] !== undefined)
         .map(d => ({
           state: d.state,
-          boys: d[`${selectedLevel}_Boys`],
-          girls: d[`${selectedLevel}_Girls`],
-          total: d[selectedLevel],
-          genderGap: (d[`${selectedLevel}_Girls`] || 0) - (d[`${selectedLevel}_Boys`] || 0)
+          boys: d[`${normalizedSelectedLevel}_Boys`],
+          girls: d[`${normalizedSelectedLevel}_Girls`],
+          total: d[normalizedSelectedLevel],
+          genderGap: (d[`${normalizedSelectedLevel}_Girls`] || 0) - (d[`${normalizedSelectedLevel}_Boys`] || 0)
         }))
         .sort((a, b) => Math.abs(b.genderGap) - Math.abs(a.genderGap));
     }
-    return getGenderComparison(selectedYear, selectedLevel);
-  }, [selectedYear, selectedLevel, isNewDataset]);
+    return getGenderComparison(selectedYear, normalizedSelectedLevel);
+  }, [selectedYear, normalizedSelectedLevel, isNewDataset]);
 
   const levelComparison = useMemo(() => {
     if (isNewDataset) {
@@ -207,12 +203,15 @@ const DashboardHome = () => {
     if (isNewDataset) {
       return newDorData
         .filter(d => d.state === selectedState)
-        .map(d => ({ year: d.year, value: d[selectedLevel] }));
+        .map(d => ({ year: d.year, value: d[normalizedSelectedLevel] }));
     }
-    return getStateTrend(selectedState, selectedLevel);
-  }, [selectedState, selectedLevel, isNewDataset]);
+    return getStateTrend(selectedState, normalizedSelectedLevel);
+  }, [selectedState, normalizedSelectedLevel, isNewDataset]);
 
-  const nationalAvg = useMemo(() => getNatAvg(selectedYear), [selectedYear, isNewDataset]);
+  const nationalAvg = useMemo(
+    () => (isNewDataset ? getNewNationalAverage(selectedYear) : getNationalAverage(selectedYear)),
+    [selectedYear, isNewDataset]
+  );
 
 
 
@@ -236,7 +235,7 @@ const DashboardHome = () => {
       </header>
 
       {/* Filters */}
-      <motion.div
+      <Motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         className="glass-card p-4"
@@ -260,7 +259,7 @@ const DashboardHome = () => {
 
           {/* Level Selector */}
           <select
-            value={selectedLevel}
+            value={normalizedSelectedLevel}
             onChange={(e) => setSelectedLevel(e.target.value)}
             className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer"
           >
@@ -281,7 +280,7 @@ const DashboardHome = () => {
             ))}
           </select>
         </div>
-      </motion.div>
+      </Motion.div>
 
       {/* View Mode Tabs */}
       <div className="flex flex-wrap gap-2">
@@ -314,7 +313,7 @@ const DashboardHome = () => {
       {/* Main Content */}
       <AnimatePresence mode="wait">
         {viewMode === 'overview' && (
-          <motion.div
+          <Motion.div
             key="overview"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -361,7 +360,7 @@ const DashboardHome = () => {
                   <AlertTriangle className="w-5 h-5 text-danger" />
                   {t('dashboard.topHighDropoutStates')}
                   <span className="text-xs text-text-secondary font-normal ml-2">
-                    ({educationLevels.find(l => l.key === selectedLevel)?.label})
+                    ({selectedLevelLabel})
                   </span>
                 </h3>
                 <div className="h-80">
@@ -391,7 +390,7 @@ const DashboardHome = () => {
                   <TrendingDown className="w-5 h-5 text-success" />
                   {t('dashboard.topBestPerformingStates')}
                   <span className="text-xs text-text-secondary font-normal ml-2">
-                    ({educationLevels.find(l => l.key === selectedLevel)?.label})
+                    ({selectedLevelLabel})
                   </span>
                 </h3>
                 <div className="h-80">
@@ -449,11 +448,11 @@ const DashboardHome = () => {
                 </ResponsiveContainer>
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
         )}
 
         {viewMode === 'comparison' && (
-          <motion.div
+          <Motion.div
             key="comparison"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -463,24 +462,24 @@ const DashboardHome = () => {
             {/* All States Comparison */}
             <div className="glass-card p-5">
               <h3 className="text-lg font-bold text-white mb-4">
-                All States - {currentLevels.find(l => l.key === selectedLevel)?.label} Dropout Rate ({shiftYearLabel(selectedYear)})
+                All States - {selectedLevelLabel} Dropout Rate ({shiftYearLabel(selectedYear)})
               </h3>
               <div className="h-[600px] overflow-auto">
                 <ResponsiveContainer width="100%" height={Math.max(600, getYearData(selectedYear).length * 35)}>
                   <BarChart
                     data={getYearData(selectedYear)
                       .filter(d => {
-                        const val = isNewDataset ? d[selectedLevel] : d[`${selectedLevel}_Total`];
+                        const val = isNewDataset ? d[normalizedSelectedLevel] : d[`${normalizedSelectedLevel}_Total`];
                         return val !== null && val !== undefined;
                       })
                       .sort((a, b) => {
-                        const aVal = isNewDataset ? a[selectedLevel] : a[`${selectedLevel}_Total`];
-                        const bVal = isNewDataset ? b[selectedLevel] : b[`${selectedLevel}_Total`];
+                        const aVal = isNewDataset ? a[normalizedSelectedLevel] : a[`${normalizedSelectedLevel}_Total`];
+                        const bVal = isNewDataset ? b[normalizedSelectedLevel] : b[`${normalizedSelectedLevel}_Total`];
                         return (bVal || 0) - (aVal || 0);
                       })
                       .map(d => ({
                         state: d.state,
-                        value: isNewDataset ? d[selectedLevel] : d[`${selectedLevel}_Total`]
+                        value: isNewDataset ? d[normalizedSelectedLevel] : d[`${normalizedSelectedLevel}_Total`]
                       }))}
                     layout="vertical"
                     margin={{ left: 100, right: 30 }}
@@ -496,16 +495,16 @@ const DashboardHome = () => {
                     <Bar dataKey="value" radius={[0, 4, 4, 0]} name="Dropout Rate">
                       {getYearData(selectedYear)
                         .filter(d => {
-                          const val = isNewDataset ? d[selectedLevel] : d[`${selectedLevel}_Total`];
+                          const val = isNewDataset ? d[normalizedSelectedLevel] : d[`${normalizedSelectedLevel}_Total`];
                           return val !== null && val !== undefined;
                         })
                         .sort((a, b) => {
-                          const aVal = isNewDataset ? a[selectedLevel] : a[`${selectedLevel}_Total`];
-                          const bVal = isNewDataset ? b[selectedLevel] : b[`${selectedLevel}_Total`];
+                          const aVal = isNewDataset ? a[normalizedSelectedLevel] : a[`${normalizedSelectedLevel}_Total`];
+                          const bVal = isNewDataset ? b[normalizedSelectedLevel] : b[`${normalizedSelectedLevel}_Total`];
                           return (bVal || 0) - (aVal || 0);
                         })
                         .map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={getRiskColor(isNewDataset ? entry[selectedLevel] : entry[`${selectedLevel}_Total`])} />
+                          <Cell key={`cell-${index}`} fill={getRiskColor(isNewDataset ? entry[normalizedSelectedLevel] : entry[`${normalizedSelectedLevel}_Total`])} />
                         ))}
                     </Bar>
                   </BarChart>
@@ -529,15 +528,15 @@ const DashboardHome = () => {
                 <h4 className="text-sm text-text-secondary mb-2">National Average</h4>
                 <p className="text-xl font-bold text-primary">All India</p>
                 <p className="text-2xl font-bold text-white">
-                  {(isNewDataset ? nationalAvg?.[selectedLevel] : nationalAvg?.[`${selectedLevel}_Total`])?.toFixed(2) || 'N/A'}%
+                  {(isNewDataset ? nationalAvg?.[normalizedSelectedLevel] : nationalAvg?.[`${normalizedSelectedLevel}_Total`])?.toFixed(2) || 'N/A'}%
                 </p>
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
         )}
 
         {viewMode === 'trends' && (
-          <motion.div
+          <Motion.div
             key="trends"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -550,7 +549,7 @@ const DashboardHome = () => {
                 <div className="glass-card p-5">
                   <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                     <MapPin className="w-5 h-5 text-primary" />
-                    {selectedState} - Dropout Trend ({currentLevels.find(l => l.key === selectedLevel)?.label})
+                    {selectedState} - Dropout Trend ({selectedLevelLabel})
                   </h3>
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
@@ -612,11 +611,11 @@ const DashboardHome = () => {
                 </p>
               </div>
             )}
-          </motion.div>
+          </Motion.div>
         )}
 
         {viewMode === 'gender' && (
-          <motion.div
+          <Motion.div
             key="gender"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -626,7 +625,7 @@ const DashboardHome = () => {
             <div className="glass-card p-5">
               <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                 <Users className="w-5 h-5 text-accent" />
-                Gender-wise Dropout Analysis ({currentLevels.find(l => l.key === selectedLevel)?.label} - {shiftYearLabel(selectedYear)})
+                Gender-wise Dropout Analysis ({selectedLevelLabel} - {shiftYearLabel(selectedYear)})
               </h3>
               <p className="text-sm text-text-secondary mb-4">
                 Comparing Boys vs Girls dropout rates. Positive gap indicates higher dropout for girls.
@@ -698,8 +697,8 @@ const DashboardHome = () => {
                     <PieChart>
                       <Pie
                         data={[
-                          { name: 'Boys', value: nationalAvg?.[`${selectedLevel}_Boys`] || 0, fill: '#3b82f6' },
-                          { name: 'Girls', value: nationalAvg?.[`${selectedLevel}_Girls`] || 0, fill: '#ec4899' },
+                          { name: 'Boys', value: nationalAvg?.[`${normalizedSelectedLevel}_Boys`] || 0, fill: '#3b82f6' },
+                          { name: 'Girls', value: nationalAvg?.[`${normalizedSelectedLevel}_Girls`] || 0, fill: '#ec4899' },
                         ]}
                         cx="50%"
                         cy="50%"
@@ -721,7 +720,7 @@ const DashboardHome = () => {
                     <span className="w-2 h-2 rounded-full bg-primary mt-1.5" />
                     <span>
                       National average dropout for boys: <span className="text-white font-bold">
-                        {nationalAvg?.[`${selectedLevel}_Boys`]?.toFixed(2) || 'N/A'}%
+                        {nationalAvg?.[`${normalizedSelectedLevel}_Boys`]?.toFixed(2) || 'N/A'}%
                       </span>
                     </span>
                   </li>
@@ -729,25 +728,25 @@ const DashboardHome = () => {
                     <span className="w-2 h-2 rounded-full bg-pink-500 mt-1.5" />
                     <span>
                       National average dropout for girls: <span className="text-white font-bold">
-                        {nationalAvg?.[`${selectedLevel}_Girls`]?.toFixed(2) || 'N/A'}%
+                        {nationalAvg?.[`${normalizedSelectedLevel}_Girls`]?.toFixed(2) || 'N/A'}%
                       </span>
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="w-2 h-2 rounded-full bg-accent mt-1.5" />
                     <span>
-                      Gender gap: <span className={`font-bold ${(nationalAvg?.[`${selectedLevel}_Girls`] || 0) > (nationalAvg?.[`${selectedLevel}_Boys`] || 0)
+                      Gender gap: <span className={`font-bold ${(nationalAvg?.[`${normalizedSelectedLevel}_Girls`] || 0) > (nationalAvg?.[`${normalizedSelectedLevel}_Boys`] || 0)
                           ? 'text-pink-400'
                           : 'text-blue-400'
                         }`}>
-                        {Math.abs((nationalAvg?.[`${selectedLevel}_Girls`] || 0) - (nationalAvg?.[`${selectedLevel}_Boys`] || 0)).toFixed(2)}%
+                        {Math.abs((nationalAvg?.[`${normalizedSelectedLevel}_Girls`] || 0) - (nationalAvg?.[`${normalizedSelectedLevel}_Boys`] || 0)).toFixed(2)}%
                       </span>
                     </span>
                   </li>
                 </ul>
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
     </div>

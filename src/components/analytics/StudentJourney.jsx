@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { generateDemographics } from '../../data/mockData';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
@@ -22,7 +22,7 @@ const StudentJourney = ({ year = '2023-24' }) => {
                             const isHighRisk = stage.dropoutRate > 5;
 
                             return (
-                                <motion.div
+                                <Motion.div
                                     key={index}
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -45,7 +45,7 @@ const StudentJourney = ({ year = '2023-24' }) => {
                                             {isHighRisk ? t('analytics.highRisk') : t('analytics.stable')}
                                         </span>
                                     </div>
-                                </motion.div>
+                                </Motion.div>
                             );
                         })}
                     </div>
@@ -57,7 +57,7 @@ const StudentJourney = ({ year = '2023-24' }) => {
                         const isHighRisk = stage.dropoutRate > 5;
 
                         return (
-                            <motion.div
+                            <Motion.div
                                 key={index}
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
@@ -77,7 +77,7 @@ const StudentJourney = ({ year = '2023-24' }) => {
                                         </div>
                                     </div>
                                 </div>
-                            </motion.div>
+                            </Motion.div>
                         );
                     })}
                 </div>

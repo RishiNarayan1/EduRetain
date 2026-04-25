@@ -25,7 +25,7 @@ const ForgotPassword = () => {
         if (text) {
             try {
                 data = JSON.parse(text);
-            } catch (err) {
+            } catch {
                 console.error('Failed to parse response:', text);
                 if (response.ok) {
                     // Gracefully fall back to plain text when server returns non-JSON success bodies (e.g., proxy or HTML)
@@ -65,7 +65,7 @@ const ForgotPassword = () => {
 
         try {
             if (step === 'request') {
-                const response = await fetch('/api/password-reset/request', {
+                const response = await fetch('/api/forgot-password', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: form.email.trim() }),
@@ -76,7 +76,7 @@ const ForgotPassword = () => {
                 setStatus('Verification code sent. Check your email and enter the 6-digit code.');
             } else if (step === 'verify') {
                 // Just verify the code without password reset
-                const response = await fetch('/api/password-reset/verify', {
+                const response = await fetch('/api/verify-reset-code', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -96,7 +96,7 @@ const ForgotPassword = () => {
                     setIsLoading(false);
                     return;
                 }
-                const response = await fetch('/api/password-reset/confirm', {
+                const response = await fetch('/api/reset-password', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

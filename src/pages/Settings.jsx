@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
     Globe, LogOut, Moon, Sun, Download, User, Shield, 
     ChevronRight, Check, Database, FileText 
@@ -28,6 +28,44 @@ const Settings = () => {
     const { logout } = useAuth();
     const navigate = useNavigate();
     const [selectedExportYear, setSelectedExportYear] = useState('2021-22');
+    const [availableYears, setAvailableYears] = useState([]);
+
+    // Fetch available years from MongoDB
+    useEffect(() => {
+        const fetchYears = async () => {
+            try {
+                const response = await fetch('/api/years');
+                if (response.ok) {
+                    const data = await response.json();
+                    const dbYears = data.years || [];
+                    // Filter out 'DOR' and sort
+                    const validYears = dbYears.filter(y => y !== 'DOR').sort((a, b) => {
+                        const yearA = parseInt(a.split('-')[0]);
+                        const yearB = parseInt(b.split('-')[0]);
+                        return yearA - yearB;
+                    });
+                    setAvailableYears(validYears);
+                    setSelectedExportYear((previousYear) => (
+                        validYears.length > 0 && !validYears.includes(previousYear)
+                            ? validYears[validYears.length - 1]
+                            : previousYear
+                    ));
+                } else {
+                    // Fallback to local data
+                    const yearsSet = new Set([...getYears(), ...newYears, '2023-24']);
+                    const localYears = Array.from(yearsSet).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+                    setAvailableYears(localYears);
+                }
+            } catch (error) {
+                console.error('Error fetching years:', error);
+                // Fallback to local data
+                const yearsSet = new Set([...getYears(), ...newYears, '2023-24']);
+                const localYears = Array.from(yearsSet).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+                setAvailableYears(localYears);
+            }
+        };
+        fetchYears();
+    }, []);
 
     const downloadFile = (filename, content, mimeType) => {
         const blob = content instanceof Uint8Array
@@ -41,10 +79,7 @@ const Settings = () => {
         URL.revokeObjectURL(url);
     };
 
-    const exportYears = useMemo(() => {
-        const yearsSet = new Set([...getYears(), ...newYears, '2023-24']);
-        return Array.from(yearsSet).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
-    }, []);
+    const exportYears = availableYears;
 
     const getLatestYear = (yearsArr) => {
         const sorted = [...yearsArr].sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
@@ -235,11 +270,58 @@ const Settings = () => {
         navigate('/login');
     };
 
-    const handleExportData = () => {
-        const summary = buildAnalyticsSummary(selectedExportYear, 'Secondary');
-        const reportText = buildPdfReport(summary);
-        const pdfBytes = buildSimplePdf(reportText);
-        downloadFile('edu-retain-analytics.pdf', pdfBytes, 'application/pdf');
+    const handleExportData = async () => {
+        try {
+            // Fetch data from MongoDB API
+            const response = await fetch(`/api/export/${selectedExportYear}?format=json`);
+            
+            if (!response.ok) {
+                // If data not found in MongoDB, fall back to local data
+                console.warn('Data not found in database, using local data');
+                const summary = buildAnalyticsSummary(selectedExportYear, 'Secondary');
+                const reportText = buildPdfReport(summary);
+                const pdfBytes = buildSimplePdf(reportText);
+                downloadFile('edu-retain-analytics.pdf', pdfBytes, 'application/pdf');
+                return;
+            }
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `edu-retain-${selectedExportYear}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error exporting data:', error);
+            // Fall back to local PDF generation
+            const summary = buildAnalyticsSummary(selectedExportYear, 'Secondary');
+            const reportText = buildPdfReport(summary);
+            const pdfBytes = buildSimplePdf(reportText);
+            downloadFile('edu-retain-analytics.pdf', pdfBytes, 'application/pdf');
+        }
+    };
+
+    const handleExportCSV = async () => {
+        try {
+            const response = await fetch(`/api/export/${selectedExportYear}?format=csv`);
+            
+            if (!response.ok) {
+                alert('Data not found in database for this year');
+                return;
+            }
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `edu-retain-${selectedExportYear}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error exporting CSV:', error);
+            alert('Failed to export CSV data');
+        }
     };
 
     return (
@@ -344,9 +426,9 @@ const Settings = () => {
                     </h2>
                 </div>
                 <p className="text-text-secondary text-sm mb-4">
-                    Choose a year and export a PDF with Overview, State Comparison, and Gender Analysis insights.
+                    Choose a year and export data from the database in your preferred format (JSON, CSV, or PDF).
                 </p>
-                <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+                <div className="flex flex-col gap-3">
                     <select
                         value={selectedExportYear}
                         onChange={(e) => setSelectedExportYear(e.target.value)}
@@ -357,13 +439,22 @@ const Settings = () => {
                         ))}
                     </select>
 
-                    <button
-                        onClick={handleExportData}
-                        className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-success/20 border border-success/30 text-white hover:bg-success/30 transition-all font-medium"
-                    >
-                        <FileText className="w-5 h-5" />
-                        Download PDF
-                    </button>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <button
+                            onClick={handleExportData}
+                            className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-success/20 border border-success/30 text-white hover:bg-success/30 transition-all font-medium"
+                        >
+                            <Database className="w-5 h-5" />
+                            Download JSON
+                        </button>
+                        <button
+                            onClick={handleExportCSV}
+                            className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-primary/20 border border-primary/30 text-white hover:bg-primary/30 transition-all font-medium"
+                        >
+                            <FileText className="w-5 h-5" />
+                            Download CSV
+                        </button>
+                    </div>
                 </div>
             </section>
 

@@ -23,6 +23,19 @@ dist-ssr
 *.sln
 *.sw?
 
+# Environment files (never commit secrets)
 .env
+.env.*
+!.env.example
+backend/.env
+
+
 node_modules/
 dist/
+
+# MongoDB backups
+*.dump
+backup/
+
+# User data (legacy)
+backend/users.json.backup

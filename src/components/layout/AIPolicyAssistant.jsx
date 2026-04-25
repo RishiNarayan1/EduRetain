@@ -2,7 +2,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, X, Send, Download, Loader2, Sparkles, FileText } from 'lucide-react';
 import clsx from 'clsx';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
 import { useLanguage } from '../../context/LanguageContext';
 import { generateDropoutAnalysis } from '../../services/geminiService';
 import { newDorData, getNewStates } from '../../utils/newDorData';
@@ -10,12 +11,12 @@ import { dorRawData, getStates } from '../../utils/dorDataParser';
 import jsPDF from 'jspdf';
 
 const AIPolicyAssistant = () => {
-    const { t } = useLanguage();
+    useLanguage();
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
-        { 
-            id: 'init', 
-            role: 'model', 
+        {
+            id: 'init',
+            role: 'model',
             text: "Hello! 👋 Welcome to EduRetain AI Assistant!\n\nI'm here to help you explore and understand educational dropout trends across India. I can assist you with:\n\n• Analyzing dropout rates for specific states\n• Comparing trends across different years\n• Gender-wise analysis of dropout patterns\n• Generating detailed policy reports\n\nFeel free to ask me questions like:\n\"What are the dropout rates in Kerala?\"\n\"Compare boys vs girls dropout in 2021\"\n\"Show trends for Secondary education\"\n\nHow may I assist you today?"
         }
     ]);
@@ -34,21 +35,67 @@ const AIPolicyAssistant = () => {
     // Gather all available unique states for context detection
     const allStates = Array.from(new Set([...getStates(), ...getNewStates()]));
 
+    // Helper function to normalize text for fuzzy matching (remove spaces, lowercase)
+    const normalizeText = (text) => text.toLowerCase().replace(/\s+/g, '').replace(/&/g, 'and');
+
+    // Find state with flexible matching
+    const findState = (userInput) => {
+        const normalizedInput = normalizeText(userInput);
+
+        // Don't try to detect states from very short inputs (greetings, etc.)
+        if (normalizedInput.length < 4) return null;
+
+        // Check for common abbreviations first (exact word match)
+        const abbreviations = {
+            'ap': 'Andhra Pradesh',
+            'mp': 'Madhya Pradesh',
+            'up': 'Uttar Pradesh',
+            'hp': 'Himachal Pradesh',
+            'wb': 'West Bengal',
+            'tn': 'Tamil Nadu',
+            'jk': 'Jammu & Kashmir',
+            'uk': 'Uttarakhand',
+            'j&k': 'Jammu & Kashmir',
+        };
+
+        // Check if input IS exactly an abbreviation (for short queries like "show AP data")
+        const words = userInput.toLowerCase().split(/\s+/);
+        for (const word of words) {
+            if (abbreviations[word]) {
+                const foundState = allStates.find(s => s === abbreviations[word]);
+                if (foundState) return foundState;
+            }
+        }
+
+        // Direct match - input contains full state name
+        let match = allStates.find(s => {
+            const normalizedState = normalizeText(s);
+            // Only match if state name is at least 4 chars and input contains it
+            return normalizedState.length >= 4 && normalizedInput.includes(normalizedState);
+        });
+        if (match) return match;
+
+        return null;
+    };
+
     const handleSend = async () => {
         if (!input.trim()) return;
 
-        const userMessage = { id: Date.now(), role: 'user', text: input };
+        // Check if user is asking for a report/download
+        const lowerInput = input.toLowerCase();
+        const wantsReport = lowerInput.includes('report') || lowerInput.includes('download');
+
+        const userMessage = { id: Date.now(), role: 'user', text: input, wantsReport };
         setMessages(prev => [...prev, userMessage]);
         setInput('');
         setIsTyping(true);
 
         try {
-            // Context Detection
-            const lowerInput = userMessage.text.toLowerCase();
-            const detectedState = allStates.find(s => lowerInput.includes(s.toLowerCase()));
-            
+            // Context Detection - using flexible state matching
+            const detectedState = findState(userMessage.text);
+
             let contextData = {};
-            
+
             if (detectedState) {
                 // Fetch data specific to the state
                 const newData = newDorData.filter(d => d.state === detectedState);
@@ -72,25 +119,40 @@ const AIPolicyAssistant = () => {
                 };
             }
 
-            // Call Gemini
-            const analysis = await generateDropoutAnalysis(userMessage.text, contextData);
+            // Call Gemini with chat history for memory
+            // Format history for the API (last 10 messages, excluding init greeting)
+            // Gemini requires history to start with 'user' role, so filter appropriately
+            const historyForAPI = messages
+                .filter(m => m.id !== 'init') // Exclude the initial greeting
+                .slice(-10)
+                .map(m => ({
+                    role: m.role,
+                    content: m.text
+                }));
+
+            // Ensure history starts with a user message (Gemini requirement)
+            const startIndex = historyForAPI.findIndex(m => m.role === 'user');
+            const validHistory = startIndex >= 0 ? historyForAPI.slice(startIndex) : [];
+
+            const analysis = await generateDropoutAnalysis(userMessage.text, contextData, validHistory);
 
             const botMessage = {
                 id: Date.now() + 1,
                 role: 'model',
                 text: analysis.chatResponse,
                 reportContent: analysis.detailedReport,
-                insights: analysis.keyInsights
+                insights: analysis.keyInsights,
+                showDownload: userMessage.wantsReport // Only show download if user asked for report
             };
 
             setMessages(prev => [...prev, botMessage]);
 
         } catch (error) {
             console.error("Chat error:", error);
-            setMessages(prev => [...prev, { 
-                id: Date.now() + 1, 
-                role: 'model', 
-                text: "I sincerely apologize for the inconvenience! I'm experiencing a temporary issue while processing your request. 🙏\n\nPlease try one of the following:\n\n• Rephrase your question with more specific details\n• Explore the interactive dashboard charts above\n• Try asking about a specific state or education level\n\nI'm here to help, so please don't hesitate to ask again. Thank you for your patience!" 
+            setMessages(prev => [...prev, {
+                id: Date.now() + 1,
+                role: 'model',
+                text: "I sincerely apologize for the inconvenience! I'm experiencing a temporary issue while processing your request. 🙏\n\nPlease try one of the following:\n\n• Rephrase your question with more specific details\n• Explore the interactive dashboard charts above\n• Try asking about a specific state or education level\n\nI'm here to help, so please don't hesitate to ask again. Thank you for your patience!"
             }]);
         } finally {
             setIsTyping(false);
@@ -99,7 +161,7 @@ const AIPolicyAssistant = () => {
 
     const handleDownloadReport = (content, title = "Analysis Report") => {
         const doc = new jsPDF();
-        
+
         // Header
         doc.setFillColor(30, 41, 59); // Dark blue header
         doc.rect(0, 0, 210, 40, 'F');
@@ -108,14 +170,14 @@ const AIPolicyAssistant = () => {
         doc.text("EduRetain AI Analysis", 20, 25);
         doc.setFontSize(10);
         doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 150, 25);
-        
+
         // Content
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(11);
-        
+
         const splitText = doc.splitTextToSize(content, 170);
         let y = 50;
-        
+
         // Simple pagination
         splitText.forEach(line => {
             if (y > 280) {
@@ -151,7 +213,7 @@ const AIPolicyAssistant = () => {
             {/* Chat Panel */}
             <AnimatePresence>
                 {isOpen && (
-                    <motion.div
+                    <Motion.div
                         initial={{ x: '100%' }}
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
@@ -180,7 +242,7 @@ const AIPolicyAssistant = () => {
                         {/* Messages Area */}
                         <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10">
                             {messages.map((msg) => (
-                                <motion.div
+                                <Motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     key={msg.id}
@@ -194,15 +256,28 @@ const AIPolicyAssistant = () => {
                                             <Bot className="w-5 h-5 text-primary" />
                                         </div>
                                     )}
-                                    
+
                                     <div className={clsx(
                                         "max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed",
-                                        msg.role === 'user' 
-                                            ? "bg-primary text-white rounded-tr-none" 
+                                        msg.role === 'user'
+                                            ? "bg-primary text-white rounded-tr-none"
                                             : "bg-white/10 text-text-secondary rounded-tl-none border border-white/5"
                                     )}>
-                                        <p className="whitespace-pre-wrap">{msg.text}</p>
-                                        
+                                        <div className="whitespace-pre-wrap prose prose-invert prose-sm max-w-none">
+                                            <ReactMarkdown
+                                                components={{
+                                                    p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                                                    strong: ({ children }) => <strong className="text-white font-semibold">{children}</strong>,
+                                                    em: ({ children }) => <em className="text-accent">{children}</em>,
+                                                    ul: ({ children }) => <ul className="list-disc list-inside my-2">{children}</ul>,
+                                                    ol: ({ children }) => <ol className="list-decimal list-inside my-2">{children}</ol>,
+                                                    li: ({ children }) => <li className="mb-1">{children}</li>
+                                                }}
+                                            >
+                                                {msg.text}
+                                            </ReactMarkdown>
+                                        </div>
+
                                         {/* Key Insights Chips */}
                                         {msg.insights && msg.insights.length > 0 && (
                                             <div className="mt-3 flex flex-wrap gap-2">
@@ -214,8 +289,8 @@ const AIPolicyAssistant = () => {
                                             </div>
                                         )}
 
-                                        {/* Download Report Button */}
-                                        {msg.reportContent && (
+                                        {/* Download Report Button - Only show if user asked for report */}
+                                        {msg.reportContent && msg.showDownload && (
                                             <button
                                                 onClick={() => handleDownloadReport(msg.reportContent)}
                                                 className="mt-3 flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 transition-colors w-full justify-center group"
@@ -225,9 +300,9 @@ const AIPolicyAssistant = () => {
                                             </button>
                                         )}
                                     </div>
-                                </motion.div>
+                                </Motion.div>
                             ))}
-                            
+
                             {isTyping && (
                                 <div className="flex gap-3 justify-start">
                                     <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
@@ -263,7 +338,7 @@ const AIPolicyAssistant = () => {
                                 </button>
                             </div>
                         </div>
-                    </motion.div>
+                    </Motion.div>
                 )}
             </AnimatePresence>
         </>

@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }) => {
 
             try {
                 userData = responseText ? JSON.parse(responseText) : null;
-            } catch (e) {
+            } catch {
                 console.error('Failed to parse (login):', responseText);
                 throw new Error('Server error: Invalid response format');
             }
@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }) => {
 
             try {
                 newUser = responseText ? JSON.parse(responseText) : null;
-            } catch (e) {
+            } catch {
                 console.error('Failed to parse (register):', responseText);
                 throw new Error('Server error: Invalid response format');
             }
@@ -121,6 +121,7 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {

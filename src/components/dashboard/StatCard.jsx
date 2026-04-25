@@ -2,17 +2,17 @@ import React from 'react';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import clsx from 'clsx';
 
-const StatCard = ({ title, value, change, trend, icon: Icon, color }) => {
+const StatCard = ({ title, value, change, trend, icon, color }) => {
     return (
         <div className="glass-card p-6 relative overflow-hidden group">
             <div className={clsx("absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity", color)}>
-                <Icon className="w-24 h-24" />
+                {icon ? React.createElement(icon, { className: 'w-24 h-24' }) : null}
             </div>
 
             <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-4">
                     <div className={clsx("p-2 rounded-lg bg-white/5", color)}>
-                        <Icon className="w-6 h-6 text-white" />
+                        {icon ? React.createElement(icon, { className: 'w-6 h-6 text-white' }) : null}
                     </div>
                     <h3 className="text-text-secondary font-medium">{title}</h3>
                 </div>

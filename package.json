@@ -4,13 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite\" \"node backend/server.js\"",
+    "dev": "concurrently \"vite\" \"node backend/server.cjs\"",
     "start-all": "concurrently \"npm:server\" \"npm:vite-only\"",
     "vite-only": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "server": "node backend/server.js"
+    "server": "node backend/server.cjs",
+    "migrate": "node backend/migrate.cjs",
+    "import-csv": "node backend/importCSV.cjs",
+    "check-setup": "node backend/checkSetup.cjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -26,10 +29,12 @@
     "framer-motion": "^12.23.25",
     "jspdf": "^3.0.4",
     "lucide-react": "^0.555.0",
+    "mongoose": "^9.0.2",
     "nodemailer": "^7.0.11",
     "postcss": "^8.5.6",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.10.1",
     "recharts": "^3.5.1",
     "tailwind-merge": "^3.4.0",

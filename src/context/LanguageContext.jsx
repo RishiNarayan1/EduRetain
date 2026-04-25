@@ -59,6 +59,7 @@ export const LanguageProvider = ({ children }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
   if (!context) {
@@ -66,5 +67,3 @@ export const useLanguage = () => {
   }
   return context;
 };
-
-export default LanguageContext;

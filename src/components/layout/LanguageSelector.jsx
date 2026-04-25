@@ -4,7 +4,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import clsx from 'clsx';
 
 const LanguageSelector = () => {
-  const { language, changeLanguage, languageNames, availableLanguages, t } = useLanguage();
+  const { language, changeLanguage, languageNames, availableLanguages } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
